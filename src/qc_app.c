@@ -12,18 +12,15 @@
 #include "qapi_timer.h"
 #include "txm_module.h"
 
-
-
 #include "qc_uart.h"
-
-
-
+#include "qc_timer.h"
 
 #define TASK_BYTE_POOL_SIZE (128 * 8 * 1024)
 UINT byte_pool_remaining = TASK_BYTE_POOL_SIZE;
 TX_BYTE_POOL *byte_pool_task = NULL;
 char free_memory_for_task[TASK_BYTE_POOL_SIZE];
 
+extern int volatile mode = 1;
 
 int qc_create_byte_pool()
 {
@@ -40,11 +37,11 @@ int qc_create_byte_pool()
     ret += tx_byte_pool_create(byte_pool_task, "Application Pool", free_memory_for_task, TASK_BYTE_POOL_SIZE);
     if (ret != TX_SUCCESS)
     {
-       
+
         return ret;
     }
     else
-    return ret;
+        return ret;
     /*Creation of Byte Pool Successful*/
 }
 
@@ -54,10 +51,21 @@ int quectel_task_entry(void)
     qapi_Timer_Sleep(10, QAPI_TIMER_UNIT_SEC, true); // Necessary Incase you using QEFS to flash code
     qc_create_byte_pool();
     _log_setup();
+    timer_utils_init();
+    char buffer[64];
+    memset(buffer, 0, 64);
+
     while (1)
     {
-        _log("Lets Start the Adventure");
-        qapi_Timer_Sleep(10, QAPI_TIMER_UNIT_SEC, true);
 
+        if (mode == 1)
+        {
+
+            _log("Lets Start the Adventure");
+            _log("Timer Count %d", mode);
+            mode = 0;
+        }
+
+        // qapi_Timer_Sleep(10, QAPI_TIMER_UNIT_SEC, true);
     }
 }
